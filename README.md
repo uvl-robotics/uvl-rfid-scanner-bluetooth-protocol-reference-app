@@ -1,6 +1,7 @@
 # UVL RFID scanner Bluetooth protocol reference application
 
-> Protocol Version: 1.0.0 
+> Protocol Version: 1.0.0  
+> Application Version: 1.0.1
 
 A reference implementation of the UVL RFID scanner Bluetooth protocol.
 
