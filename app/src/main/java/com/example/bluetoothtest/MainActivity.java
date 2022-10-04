@@ -54,11 +54,14 @@ public class MainActivity extends AppCompatActivity {
 
         textView.setMovementMethod(new ScrollingMovementMethod());
 
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, 1);
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-
 
         if (bluetoothAdapter == null) {
             log("Bluetooth no work");
