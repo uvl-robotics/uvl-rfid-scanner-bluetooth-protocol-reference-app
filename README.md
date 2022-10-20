@@ -1,12 +1,12 @@
 # UVL RFID scanner Bluetooth protocol reference application
 
-> Protocol Version: 1.0.0  
-> Application Version: 1.0.1
+> Protocol Version: 1.1.0  
+> Application Version: 1.1.0
 
 A reference implementation of the UVL RFID scanner Bluetooth protocol.
 
 <p align="center">
-  <img height="800" src="screenshot.png">
+  <img height="800" src="screenshot2.png">
 </p>
 
 UVL's partner will be integrating the protocol into their application.  
@@ -29,8 +29,8 @@ The partner's application is designed to run on a portable data terminal (PDT) u
 - Open the `UVL Scan` app
 - Wait for device list to load
 - Select the `UVL_RFID_SCANNER` device from list
-- Wait for connection to go through and for the `Scan` button to become active
-- Click the `Scan` button
+- Wait for connection to go through and for the `AT+SCAN?` button to become active
+- Click the `AT+SCAN?` button
 - Scan a RFID label with the scanner
 - Observe the label's parameters in the log on the application screen
 - To disconnect click the `UVL_RFID_SCANNER` in the device list
@@ -41,7 +41,7 @@ The protocol is based on the Hayes command set (AT command set) commonly seen in
 
 The commands are as follows:
 
-Command: `AT\r\n` - generic handshake, check is device is present
+## Command: `AT\r\n` - generic handshake, check is device is present
 ```
 AT
 ```
@@ -51,27 +51,72 @@ AT
 OK
 ```
 
-Command: `AT+SCAN?` - request scan
+## Command: `AT+SCAN=1\r\n` - enable continuous scanning
 ```
-AT
+AT+SCAN=1
+```
+Response: `OK\r\n` - continous scanning enabled
+```
+AT+SCAN=1
 OK
+```
+After this the scanner starts sending label data on each line followed with the standard line ending `\r\n` in the <a href="#label-data-format">label data format</a> outlined below.
+```
+AT+SCAN=1
+OK
+1,300833B2DDD9014000000032,1,-57.6,0,0,1
+2,300833B2DDD9014000000033,1,-58.1,0,0,1
+3,300833B2DDD9014000000034,1,-52.3,0,0,1
+4,300833B2DDD9014000000035,1,-55.8,0,0,1
+5,300833B2DDD9014000000036,1,-51.4,0,0,1
+...
+```
+
+## Command: `AT+SCAN=0\r\n` - stop continuos scanning / interrupt active scanning command
+```
+AT+SCAN=0
+```
+Response: `OK\r\n` - continuos scanning disbaled or an active scanning command interrupted
+```
+AT+SCAN=0
+OK
+```
+## Command: `AT+SCAN?` - request scan of a single label
+```
 AT+SCAN?
 ``` 
-Response: `1,300833B2DDD9014000000032,1,-57.6,0,0,1\r\n\r\nOK\r\n`
+Response: `1,300833B2DDD9014000000032,1,-57.6,0,0,1\r\n\r\nOK\r\n`  
+The response is:
+- scanned label info according to <a href="#label-data-format">label data format</a> followed with the standard line ending `\r\n`
+- an empty line `\r\n`
+- the end of command `OK\r\n`.
+
 ```
-AT
-OK
+AT+SCAN?
 1,300833B2DDD9014000000032,1,-57.6,0,0,1
 
 OK
 ```
+## Command: `AT+SCAN?COUNT=<count>` - request scan of `<count>` labels
+```
+AT+SCAN?COUNT=3
+``` 
 
-Response consists of:
-- data `1,300833B2DDD9014000000032,1,-57.6,0,0,1\r\n`
-- empty line (`\r\n`)
-- OK (`OK\r\n`)
+The response is:
+- multiple scanned label info according to <a href="#label-data-format">label data format</a>, each followed with the standard line ending `\r\n`
+- an empty line `\r\n`
+- the end of command `OK\r\n`.
+```
+AT+SCAN?COUNT=3
+1,300833B2DDD9014000000032,1,-57.6,0,0,1
+2,300833B2DDD9014000000033,1,-58.1,0,0,1
+3,300833B2DDD9014000000034,1,-52.3,0,0,1
 
-Data fields are separated by a single comma.
+OK
+```
+
+<h2 id="label-data-format"> Label data format</h2>
+Scan response consists of data fields are separated by a single comma.
 
 Data fields are as follows:
 - `1` Scan number in result sequence
@@ -81,7 +126,3 @@ Data fields are as follows:
 - `0` GPS longitude of scanner
 - `0` GPS latitude of scanner
 - `1` Tag type
-
-### Extras *(not yet implemented)*  
-- ~~Command: `AT+SCAN=1\r\n` - start continuous scanning~~  
-- ~~Command: `AT+SCAN=0\r\n` - stop continuous scanning~~

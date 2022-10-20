@@ -17,6 +17,7 @@ import android.os.ParcelUuid;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -37,10 +39,16 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice bluetoothDevice = null;
     BluetoothSocket bluetoothSocket = null;
 
+    ArrayList<View> controls = new ArrayList<>();
+
     LinearLayout rootLayout;
     TextView textView;
     Button scanBtn;
     Button handshakeBtn;
+    Button scanOnBtn;
+    Button scanOffBtn;
+    Button scanCountBtn;
+    EditText scanCountInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +59,17 @@ public class MainActivity extends AppCompatActivity {
         textView = (TextView) findViewById(R.id.textView);
         handshakeBtn = (Button) findViewById(R.id.handshakeBtn);
         scanBtn = (Button) findViewById(R.id.scanBtn);
+        scanOnBtn = (Button) findViewById(R.id.scanOnBtn);
+        scanOffBtn = (Button) findViewById(R.id.scanOffBtn);
+        scanCountBtn = (Button) findViewById(R.id.scanCountBtn);
+        scanCountInput = (EditText) findViewById(R.id.scanCountInput);
+        controls.add(handshakeBtn);
+        controls.add(scanBtn);
+        controls.add(scanOnBtn);
+        controls.add(scanOffBtn);
+        controls.add(scanCountBtn);
+        controls.add(scanCountInput);
+
 
         textView.setMovementMethod(new ScrollingMovementMethod());
 
@@ -85,7 +104,33 @@ public class MainActivity extends AppCompatActivity {
         handshakeBtn.setOnClickListener(view -> {
             new Thread(() -> {
                 boolean ok = handshake(bluetoothSocket);
-                log(ok ? "Handshake ok" : "handshake failed");
+                log(ok ? "Handshake ok" : "Handshake failed");
+            }).start();
+        });
+
+        scanOnBtn.setOnClickListener(view -> {
+            new Thread(() -> {
+                boolean ok = scanOn(bluetoothSocket);
+                log(ok ? "ScanOn ok" : "ScanOn failed");
+            }).start();
+        });
+
+        scanOffBtn.setOnClickListener(view -> {
+            waitingForResponse = false;
+            new Thread(() -> {
+                boolean ok = scanOff(bluetoothSocket);
+                log(ok ? "ScanOff ok" : "ScanOff failed");
+            }).start();
+        });
+
+        scanCountBtn.setOnClickListener(view -> {
+            log("Scanning...");
+            new Thread(() -> {
+                String res = scanCount(bluetoothSocket);
+                if (res == null) {
+                    log("Scanned nothing");
+                    return;
+                }
             }).start();
         });
 
@@ -221,7 +266,12 @@ public class MainActivity extends AppCompatActivity {
         return commandBasic(socket, "AT", 1000);
     }
 
-    boolean cancelScanning(BluetoothSocket socket) {
+    boolean scanOn(BluetoothSocket socket) {
+        command(socket, "AT+SCAN=1", "\r\n\r\nOK", Integer.MAX_VALUE);
+        return true;
+    }
+
+    boolean scanOff(BluetoothSocket socket) {
         return commandBasic(socket, "AT+SCAN=0", 1000);
     }
 
@@ -229,10 +279,21 @@ public class MainActivity extends AppCompatActivity {
         return command(socket, "AT+SCAN?", "\r\n\r\nOK", 10000);
     }
 
+    String scanCount(BluetoothSocket socket) {
+        String text = scanCountInput.getText().toString();
+        Integer number;
+        try {
+            number = Integer.valueOf(text);
+        } catch (NumberFormatException err) {
+            log("\"" + text + "\"", "is not a number");
+            return null;
+        }
+        return command(socket, "AT+SCAN?COUNT=" + number, "\r\n\r\nOK", 10000);
+    }
 
     boolean commandBasic(BluetoothSocket socket, String command, int waitForMs) {
         String response = command(socket, command, "OK", waitForMs);
-        return response != null && response.equals("");
+        return response != null;
     }
 
     @SuppressLint("MissingPermission")
@@ -255,8 +316,9 @@ public class MainActivity extends AppCompatActivity {
             os.write((command + "\r\n").getBytes());
             os.flush();
             log(">", command);
+            logRaw("< ");
 
-            while (waited < waitForMs) {
+            while (waitingForResponse && waited < waitForMs) {
                 if (is.available() > 0) {
                     int read = is.read(buff, len, buff.length - len);
                     if (read == -1) {
@@ -264,10 +326,12 @@ public class MainActivity extends AppCompatActivity {
                         len = 0;
                         break;
                     } else if (read > 0) {
+                        String responseRawPart = new String(buff, len,read);
+                        logRaw(responseRawPart);
                         String responseRaw = new String(buff);
                         int expectIndex = responseRaw.indexOf(expect + "\r\n");
                         if (expectIndex >= 0) {
-                            log("<", responseRaw.substring(0, expectIndex + expect.length()));
+                            //log("<", responseRaw.substring(0, expectIndex + expect.length()));
                             String response = responseRaw.substring(0, expectIndex);
                             waitingForResponse = false;
                             return response;
@@ -285,9 +349,15 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             log("Cant use the socket");
             waitingForResponse = false;
+            return null;
         } catch (InterruptedException e) {
             log("Reading interrupted");
             waitingForResponse = false;
+            return null;
+        }
+        if (!waitingForResponse) {
+            log("Command interrupted");
+            return null;
         }
         log("Command timed out");
         waitingForResponse = false;
@@ -302,6 +372,14 @@ public class MainActivity extends AppCompatActivity {
                 textView.append(more == null ? "null" : more);
             }
             textView.append("\n");
+        });
+    }
+
+    void logRaw(String arg, String ...args) {
+        runUI(() -> {
+            textView.append(arg);
+            for (String more: args)
+                textView.append(more == null ? "null" : more);
         });
     }
 
@@ -327,12 +405,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void lockControlButtons() {
-        scanBtn.setEnabled(false);
-        handshakeBtn.setEnabled(false);
+        for (View view : controls)
+            view.setEnabled(false);
     }
 
     void unlockControlButtons() {
-        scanBtn.setEnabled(true);
-        handshakeBtn.setEnabled(true);
+        for (View view : controls)
+            view.setEnabled(true);
     }
 }

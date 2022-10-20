@@ -29,7 +29,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="Handshake" />
+                android:text="AT" />
 
             <Button
                 android:id="@+id/scanBtn"
@@ -38,8 +38,62 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="Scan" />
+                android:text="AT+SCAN?" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/scanOnBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+SCAN=1" />
+
+            <Button
+                android:id="@+id/scanOffBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+SCAN=0" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/scanCountBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+SCAN?COUNT=" />
+
+            <EditText
+                android:id="@+id/scanCountInput"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:ems="5"
+                android:enabled="false"
+                android:hint="COUNT"
+                android:inputType="number"
+                android:numeric="integer"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:textAlignment="center" />
         </LinearLayout>
 
         <ScrollView
