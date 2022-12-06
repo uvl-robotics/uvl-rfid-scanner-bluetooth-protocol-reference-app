@@ -146,12 +146,12 @@ AT+SCAN?COUNT=3
 OK
 ```
 
-## Command: `AT+FIND?<FILTER><params...>\r\n` - search for labes using a filter with parameters
+## Command: `AT+FIND?<filter&params...>\r\n` - search for labes using a filter with parameters
 ```
 AT+FIND?PERSISTENT&COUNT=2&DURATION=20000
 ```
 
-The `FILTER` can be:
+The `filter` can be:
 - `BEST` find the labes with best RSSI, sort by it and send the best first
 - `PERSISTENT` find the labes that are the most persistent or stable, to be used on a mooving scanner to detect the labes that are moving with it
 
