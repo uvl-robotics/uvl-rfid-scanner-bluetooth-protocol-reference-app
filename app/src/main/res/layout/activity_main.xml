@@ -26,19 +26,19 @@
                 android:id="@+id/handshakeBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:enabled="false"
                 android:text="AT" />
 
             <Button
-                android:id="@+id/scanBtn"
+                android:id="@+id/versionBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="AT+SCAN?" />
+                android:text="AT+VERSION" />
 
         </LinearLayout>
 
@@ -51,19 +51,39 @@
                 android:id="@+id/scanOnBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="AT+SCAN=1" />
+                android:text="AT+SCAN=1"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/scanOffBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="AT+SCAN=0" />
+                android:text="AT+SCAN=0"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/scanBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="0"
+                android:enabled="false"
+                android:text="AT+SCAN?"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -78,22 +98,104 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:enabled="false"
-                android:text="AT+SCAN?COUNT=" />
+                android:text="AT+SCAN?COUNT="
+                android:visibility="gone" />
 
             <EditText
                 android:id="@+id/scanCountInput"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:ems="5"
                 android:enabled="false"
-                android:hint="COUNT"
+                android:hint="COUNT=1"
                 android:inputType="number"
                 android:numeric="integer"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:textAlignment="center" />
+                android:textAlignment="center"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/scanDurationInput"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:ems="5"
+                android:enabled="false"
+                android:hint="DURATION=inf"
+                android:inputType="number"
+                android:numeric="integer"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textSize="14sp" />
+
+            <Switch
+                android:id="@+id/persistentSw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="0"
+                android:checked="true"
+                android:enabled="false"
+                android:text="PERSISTENT" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/scanDurationBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+SCAN?DURATION="
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/scanExtendedBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+SCAN" />
+
+            <Button
+                android:id="@+id/findBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+FIND" />
+
+            <Button
+                android:id="@+id/interruptBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="AT+INTERRUPT"
+                android:textSize="14sp" />
+
         </LinearLayout>
 
         <ScrollView
@@ -116,7 +218,7 @@
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="200dp"
             android:background="#303030"
             android:fontFamily="monospace"
             android:gravity="bottom"

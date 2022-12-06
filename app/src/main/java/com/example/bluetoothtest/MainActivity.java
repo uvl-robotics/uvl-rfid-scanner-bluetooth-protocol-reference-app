@@ -1,5 +1,6 @@
 package com.example.bluetoothtest;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,10 +21,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,8 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+    static Handler mainLooperHandler = new Handler(Looper.getMainLooper());
+
     BluetoothAdapter bluetoothAdapter;
     BluetoothDevice bluetoothDevice = null;
     BluetoothSocket bluetoothSocket = null;
@@ -44,31 +47,54 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout rootLayout;
     TextView textView;
     Button scanBtn;
+    Button scanExtendedBtn;
     Button handshakeBtn;
+    Button versionBtn;
     Button scanOnBtn;
     Button scanOffBtn;
+    Button interruptBtn;
     Button scanCountBtn;
     EditText scanCountInput;
+    Button scanDurationBtn;
+    EditText scanDurationInput;
+    Button findBtn;
+    Switch persistentSw;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rootLayout = (LinearLayout) findViewById(R.id.rootLayout);
-        textView = (TextView) findViewById(R.id.textView);
-        handshakeBtn = (Button) findViewById(R.id.handshakeBtn);
-        scanBtn = (Button) findViewById(R.id.scanBtn);
-        scanOnBtn = (Button) findViewById(R.id.scanOnBtn);
-        scanOffBtn = (Button) findViewById(R.id.scanOffBtn);
-        scanCountBtn = (Button) findViewById(R.id.scanCountBtn);
-        scanCountInput = (EditText) findViewById(R.id.scanCountInput);
+        setTitle("UVL Scan 1.4.2");
+
+        rootLayout = findViewById(R.id.rootLayout);
+        textView = findViewById(R.id.textView);
+        handshakeBtn = findViewById(R.id.handshakeBtn);
+        versionBtn = findViewById(R.id.versionBtn);
+        scanBtn = findViewById(R.id.scanBtn);
+        scanExtendedBtn = findViewById(R.id.scanExtendedBtn);
+        scanOnBtn = findViewById(R.id.scanOnBtn);
+        scanOffBtn = findViewById(R.id.scanOffBtn);
+        interruptBtn = findViewById(R.id.interruptBtn);
+        scanCountBtn = findViewById(R.id.scanCountBtn);
+        scanCountInput = findViewById(R.id.scanCountInput);
+        scanDurationBtn = findViewById(R.id.scanDurationBtn);
+        scanDurationInput = findViewById(R.id.scanDurationInput);
+        findBtn = findViewById(R.id.findBtn);
+        persistentSw = findViewById(R.id.persistentSw);
         controls.add(handshakeBtn);
+        controls.add(versionBtn);
         controls.add(scanBtn);
+        controls.add(scanExtendedBtn);
         controls.add(scanOnBtn);
         controls.add(scanOffBtn);
+        controls.add(interruptBtn);
         controls.add(scanCountBtn);
         controls.add(scanCountInput);
+        controls.add(scanDurationBtn);
+        controls.add(scanDurationInput);
+        controls.add(findBtn);
+        controls.add(persistentSw);
 
 
         textView.setMovementMethod(new ScrollingMovementMethod());
@@ -108,6 +134,13 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         });
 
+        versionBtn.setOnClickListener(view -> {
+            new Thread(() -> {
+                String ver = version(bluetoothSocket);
+                log(ver != null ? "Version: " + ver : "Version request failed");
+            }).start();
+        });
+
         scanOnBtn.setOnClickListener(view -> {
             new Thread(() -> {
                 boolean ok = scanOn(bluetoothSocket);
@@ -123,6 +156,22 @@ public class MainActivity extends AppCompatActivity {
             }).start();
         });
 
+        scanOffBtn.setOnClickListener(view -> {
+            waitingForResponse = false;
+            new Thread(() -> {
+                boolean ok = scanOff(bluetoothSocket);
+                log(ok ? "ScanOff ok" : "ScanOff failed");
+            }).start();
+        });
+
+        interruptBtn.setOnClickListener(view -> {
+            waitingForResponse = false;
+            new Thread(() -> {
+                boolean ok = interrupt(bluetoothSocket);
+                log(ok ? "Interrupt ok" : "Interrupt failed");
+            }).start();
+        });
+
         scanCountBtn.setOnClickListener(view -> {
             log("Scanning...");
             new Thread(() -> {
@@ -132,6 +181,60 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
             }).start();
+        });
+
+        scanDurationBtn.setOnClickListener(view -> {
+            log("Scanning...");
+            new Thread(() -> {
+                String res = scanDuration(bluetoothSocket);
+                if (res == null) {
+                    log("Scanned nothing");
+                    return;
+                }
+            }).start();
+        });
+
+        findBtn.setOnClickListener(view -> {
+            log("Searching...");
+            new Thread(() -> {
+                String res = find(bluetoothSocket);
+                if (res == null)
+                    log("Found nothing");
+            }).start();
+        });
+
+        scanExtendedBtn.setOnClickListener(view -> {
+            log("Scanning...");
+            new Thread(() -> {
+                String res = scanExtended(bluetoothSocket);
+                if (res == null)
+                    log("Scanned nothing");
+            }).start();
+        });
+
+        scanExtendedBtn.setOnLongClickListener(view -> {
+            scanBtn.callOnClick();
+            return true;
+        });
+
+        scanCountInput.setOnLongClickListener(view -> {
+            scanCountInput.setText("inf");
+            return false;
+        });
+
+        scanDurationInput.setOnLongClickListener(view -> {
+            scanDurationInput.setText("inf");
+            return false;
+        });
+
+        textView.setOnLongClickListener(view -> {
+            new AlertDialog.Builder(this)
+                    .setMessage("Clear console?")
+                    .setPositiveButton("YES",(dialogInterface, i) ->
+                        textView.setText("Cleared\r\n"))
+                    .setNegativeButton("CANCEL", null)
+                    .show();
+            return true;
         });
 
         scanBtn.setOnClickListener(view -> {
@@ -240,11 +343,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        log("created RFCOMM");
+        log("Created RFCOMM");
 
         try {
             bluetoothSocket.connect();
-            log("connected");
+            log("Connected");
         } catch (IOException e) {
             log("Cant connect to socket");
             return null;
@@ -256,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
     void disconnectDevice(BluetoothSocket bluetoothSocket) {
         try {
             bluetoothSocket.close();
-            log("closed");
+            log("Closed");
         } catch (IOException e) {
             log("Cant close the socket");
         }
@@ -266,13 +369,21 @@ public class MainActivity extends AppCompatActivity {
         return commandBasic(socket, "AT", 1000);
     }
 
+    String version(BluetoothSocket socket) {
+        return command(socket, "AT+VERSION", "OK", 1000);
+    }
+
     boolean scanOn(BluetoothSocket socket) {
-        command(socket, "AT+SCAN=1", "\r\n\r\nOK", Integer.MAX_VALUE);
+        command(socket, "AT+SCAN=1", "OK", Integer.MAX_VALUE);
         return true;
     }
 
     boolean scanOff(BluetoothSocket socket) {
         return commandBasic(socket, "AT+SCAN=0", 1000);
+    }
+
+    boolean interrupt(BluetoothSocket socket) {
+        return commandBasic(socket, "AT+INTERRUPT", 1000);
     }
 
     String scan(BluetoothSocket socket) {
@@ -289,6 +400,38 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
         return command(socket, "AT+SCAN?COUNT=" + number, "\r\n\r\nOK", 10000);
+    }
+
+    String scanDuration(BluetoothSocket socket) {
+        String text = scanDurationInput.getText().toString();
+        Integer number;
+        try {
+            number = Integer.valueOf(text);
+        } catch (NumberFormatException err) {
+            log("\"" + text + "\"", "is not a number");
+            return null;
+        }
+        return command(socket, "AT+SCAN?DURATION=" + number, "\r\n\r\nOK", number + 1000);
+    }
+
+    String find(BluetoothSocket socket) {
+        StringBuilder sb = new StringBuilder("AT+FIND");
+        if (persistentSw.isChecked())
+            sb.append("?PERSISTENT");
+        else
+            sb.append("?BEST");
+        appendParam(sb, "COUNT", scanCountInput.getText().toString());
+        Integer duration = appendParam(sb, "DURATION", scanDurationInput.getText().toString());
+        int waitForMs = waitMsFromParam(duration);
+        return command(socket, sb.toString(), "\r\nOK", waitForMs);
+    }
+
+    String scanExtended(BluetoothSocket socket) {
+        StringBuilder sb = new StringBuilder("AT+SCAN");
+        appendParam(sb, "COUNT", scanCountInput.getText().toString());
+        Integer duration = appendParam(sb, "DURATION", scanDurationInput.getText().toString());
+        int waitForMs = waitMsFromParam(duration);
+        return command(socket, sb.toString(), "\r\nOK", waitForMs);
     }
 
     boolean commandBasic(BluetoothSocket socket, String command, int waitForMs) {
@@ -384,7 +527,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void runUI(Runnable r) {
-        new Handler(Looper.getMainLooper()).post(r);
+        //runOnUiThread(r);
+        mainLooperHandler.post(r);
+        //new Handler(Looper.getMainLooper()).post(r);
     }
 
     void lockDeviceButtons(String except) {
@@ -412,5 +557,33 @@ public class MainActivity extends AppCompatActivity {
     void unlockControlButtons() {
         for (View view : controls)
             view.setEnabled(true);
+    }
+
+    Integer appendParam(StringBuilder sb, String name, String value) {
+        boolean first = sb.indexOf("?") == -1;
+        if (value.equals("inf")) {
+            sb.append(first ? '?' : '&')
+              .append(name)
+              .append("=inf");
+            return Integer.MAX_VALUE;
+        } else try {
+            int number = Integer.valueOf(value);
+            sb.append(first ? '?' : '&')
+              .append(name)
+              .append("=")
+              .append(number);
+            return number;
+        } catch (NumberFormatException err) {
+            return null;
+        }
+    }
+
+    int waitMsFromParam(Integer param) {
+        if (param == null)
+            return 1000;
+        else if (param == Integer.MAX_VALUE)
+            return param;
+        else
+            return param + 1000;
     }
 }
