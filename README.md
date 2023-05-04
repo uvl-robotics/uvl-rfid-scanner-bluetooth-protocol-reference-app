@@ -41,11 +41,64 @@ The protocol is inspired by the Hayes command set (AT command set) commonly seen
 
 The query, or params part of the commands that go after `?` are standart URL query paramers, their order does not matter, only their presence. More info can be found at https://en.wikipedia.org/wiki/Query_string
 
-**Each command but be followed by the standard line ending `\r\n`.**
+***The protocol is to be implemented as asynchronous***, there should be no expectation that the responses to the commands will follow immedeatly after the commands were sent, because there might be other continuous commands running in that period that would send their data before the current command is recievd and parsed. `+HB\r\n` heartbeat messages also come between any commands that are running and should be handled apropriety by the side waiting for a command response.
+
+## Heartbeat: `+HB\r\n` - every 1 second
+
+Every 1 second the module send a heartbeat command `+HB\r\n`.
+
+These messages are sent by an internal timer without regard for any command or even connection state between the connected systems.
+
+Please note that as `+HB\r\n` heartbeat messages run on an internal timer and do not wait for any connection to be established it is possible to resieve a full or even a partial `+HB\r\n` message right after connecting to the module before sending any `AT` commands. The system implementing this protocol must thus be resistant to receiving such partial message noise. A state machine based on the `switch` statment combined with a state contaier is advisable for implementation.
+
+Example for Heartbeat messages in the protocol log (note the `B\r\n` in the beginning the is partial of the `+HB\r\n` that was being sent as the connection was being established, also note the differences in when the `+HB` is received in regards to the `AT+SCAN` and `AT+INTERRUPT` request and responses, it can be recieved between any response lines as it is running asynchronously), read on commands bellow for more:
+
+```log
+B
++HB
++HB
+AT
++HB
+OK
++HB
+AT+SCAN?COUNT=3&DURATION=3000
++HB
+1,300833B2DDD9014000000032,1,-57.6,0,0,1
++HB
++HB
+NOTFOUND
+NOTFOUND
+OK
++HB
++HB
+AT+SCAN
+OK
++HB
++HB
++HB
+AT+INTERRUPT
++HB
+INTERRUPTED AT+SCAN
+OK
+AT+SCAN
++HB
+OK
++HB
++HB
+AT+INTERRUPT
+INTERRUPTED AT+SCAN
++HB
+OK
+
+```
+
+## Commands
+
+**Each command must be followed by the standard line ending `\r\n`.**
 
 The commands are as follows:
 
-## Command: `AT\r\n` - generic handshake, check is device is present
+## Command: `AT\r\n` - generic handshake, check if device is present
 ```
 AT
 ```
@@ -109,7 +162,7 @@ The `<params...>` can be:
 
 Each parameter can be a number or an `inf` meaning infinite.
 
-|`COUNT`|`DURATION`|Meaning|
+|`COUNT`|`DURATION`|Meaning
 |-|-|-|
 |n|n|Wait to scan `n` labes for `n` milliseconds|
 |n|inf|Wait to scan `n` labes infinetly|
@@ -117,7 +170,7 @@ Each parameter can be a number or an `inf` meaning infinite.
 |inf|inf|Scan all labels until explicitly interrupted|
 
 Given the default values the follwoing short versions can be used:
-- `AT+SCAN` wait for and scan 1 label
+- `AT+SCAN` wait indefinitly for and scan 1 label
 - `AT+SCAN?COUNT=inf` enable continuous scanning, same as the deprecated ~~`AT+SCAN=1`~~
 
 When a commands runs infintely, the labels' data is sent immedetely after it is scanned, there can be 2 types of responses to this command:
@@ -234,7 +287,7 @@ Data fields are as follows:
 
 
 ## <span id="notfound">`NOTFOUND` keyword</span>
-If a `COUNT` is requested, and more labes are scanned, the latter labes are dismissed. If a `DURATION` is also provided and by the time it ends less labes are scanned then requested, the missing labesl are represented in a response by a `NOTFOUND` keyword:
+If a `COUNT` is requested, and more labes are scanned, the latter labes are dismissed. If a `DURATION` is also provided and by the time it ends less labes are scanned then requested the missing labesl are represented in a response by a `NOTFOUND` keyword:
 ```
 AT+SCAN?COUNT=3&DURATION=1000
 1,300833B2DDD9014000000032,1,-57.6,0,0,1
@@ -243,7 +296,7 @@ NOTFOUND
 OK
 ```
 
-## Deprecated command: `AT+SCAN=1\r\n` - enable continuous scanning
+## Deprecated command: ~~`AT+SCAN=1\r\n`~~ - enable continuous scanning
 > **Warning**  
 > Deprecated since 1.4.0, use `AT+SCAN?COUNT=inf` instead
 
@@ -267,7 +320,7 @@ OK
 ...
 ```
 
-## Deprecated command: `AT+SCAN=0\r\n` - stop continuos scanning / interrupt active scanning command
+## Deprecated command: ~~`AT+SCAN=0\r\n`~~ - stop continuos scanning / interrupt active scanning command
 > **Warning**  
 > Deprecated since 1.4.0, use `AT+INTERRUPT` instead
 
@@ -282,7 +335,7 @@ OK
 ## Deprecated command: ~~`AT+SCAN?`~~ - request scan of a single label
 > **Warning**  
 > Deprecated since 1.4.0, use simple `AT+SCAN` instead  
-> For now, if the request wording is exactly `AT+SCAN?\r\n` an ampty line is added after the scan result, to support backwards compatability, **this will be removed in future versions, do not rely on this!**
+> For now, if the request wording is exactly `AT+SCAN?\r\n` an empty line is added after the scan result, to support backwards compatability, **this will be removed in future versions, do not rely on this!**
 
 ```
 AT+SCAN?
