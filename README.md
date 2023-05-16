@@ -1,12 +1,12 @@
 # UVL RFID scanner Bluetooth protocol reference application
 
-> Protocol Version: 1.4.0  
-> Application Version: 1.4.2
+> Protocol Version: 1.5.0  
+> Application Version: 1.5.0
 
 A reference implementation of the UVL RFID scanner Bluetooth protocol.
 
 <p align="center">
-  <img height="800" src="screenshot1.4.png">
+  <img height="800" src="screenshot1.5.png">
 </p>
 
 UVL's partner will be integrating the protocol into their application.  
@@ -118,7 +118,7 @@ The response is:
 
 ```
 AT+VERSION
-1.4.0
+1.5.0
 OK
 ```
 

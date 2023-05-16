@@ -3,12 +3,14 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    namespace "ai.uvl.uvl_rfid_scanner_bluetooth_protocol_reference_app"
+
+    compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.bluetoothtest"
+        applicationId "ai.uvl.uvl_rfid_scanner_bluetooth_protocol_reference_app"
         minSdk 25
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 

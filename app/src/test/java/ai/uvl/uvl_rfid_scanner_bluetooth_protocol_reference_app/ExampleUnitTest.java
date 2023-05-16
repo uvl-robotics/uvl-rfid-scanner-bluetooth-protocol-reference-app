@@ -1,4 +1,4 @@
-package com.example.bluetoothtest;
+package ai.uvl.uvl_rfid_scanner_bluetooth_protocol_reference_app;
 
 import org.junit.Test;
 

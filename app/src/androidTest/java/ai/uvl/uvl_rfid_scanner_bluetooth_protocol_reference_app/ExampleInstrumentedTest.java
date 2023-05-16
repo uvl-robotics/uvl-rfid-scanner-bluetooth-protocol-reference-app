@@ -1,4 +1,4 @@
-package com.example.bluetoothtest;
+package ai.uvl.uvl_rfid_scanner_bluetooth_protocol_reference_app;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.bluetoothtest", appContext.getPackageName());
+        assertEquals("ai.uvl.uvl_rfid_scanner_bluetooth_protocol_reference_app", appContext.getPackageName());
     }
 }

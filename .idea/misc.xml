@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/v/AndroidStudioProjects/Bluetoothtest/app/src/main/res/layout/activity_main.xml" value="0.23263327948303716" />
-        <entry key="..\:/Users/v/AndroidStudioProjects/uvl-rfid-scanner-bluetooth-protocol-reference-app/app/src/main/res/layout/activity_main.xml" value="0.33" />
-        <entry key="..\:/Users/v/AndroidStudioProjects/uvl-rfid-scanner-bluetooth-protocol-reference-app/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.186" />
+        <entry key="..\://cygwin64/home/v/uvl_rfid_scanner_bluetooth_protocol_reference_app/app/src/main/res/layout/activity_main.xml" value="0.23263327948303716" />
+        <entry key="..\://cygwin64/home/v/uvl_rfid_scanner_bluetooth_protocol_reference_app/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\://cygwin64/home/v/uvl_rfid_scanner_bluetooth_protocol_reference_app/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.186" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="jbr-17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
