@@ -24,13 +24,14 @@ The partner's application is designed to run on a portable data terminal (PDT) u
 - As soon as the pairing is done you are ready to scan
 
 ## Scanning
-- Turn on the UVL RFID scanner
+- Turn on the UVL RFID Scanner
 - Enable Bluetooth on the PDT
+- Pair the bluetooth UVL RFID Scanner device (named `UVL_RFID_SCANNER`) with the PDT
 - Open the `UVL Scan` app
 - Wait for device list to load
 - Select the `UVL_RFID_SCANNER` device from list
-- Wait for connection to go through and for the `AT+SCAN?` button to become active
-- Click the `AT+SCAN?` button
+- Wait for connection to go through and for the `AT+SCAN` button to become active
+- Click the `AT+SCAN` button
 - Scan a RFID label with the scanner
 - Observe the label's parameters in the log on the application screen
 - To disconnect click the `UVL_RFID_SCANNER` in the device list
